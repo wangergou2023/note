@@ -475,3 +475,83 @@ err_clk:
 
 ~~~
 
+## crypto子系统
+
+### 算法的选择
+
+内核使用算法名(cra_name)来表示某一特定的算法，而使用算法驱动名(cra_driver_name)来表示算法的特定实现。不同的crypto_alg可以含有相同的cra_name，但其cra_driver_name是唯一的。用户可以使用cra_name或cra_driver_name来调用相关算法，为了在用户使用cra_name参数时选择最优的算法实现，内核对每种crypto_alg都定义了一个优先级。当给定cra_name还有多种不同实现时，则选择其中优先级最高的算法实现。例如以下链表中，包含了两个ecb(aes)的算法实现，其中一个优先级为100，另一个优先级为400，则若用户指定了该算法，则内核会选择优先级为400的算法。
+
+~~~c
+//内核默认的算法
+static struct shash_alg sha256_algs[2] = { {
+	.digestsize	=	SHA256_DIGEST_SIZE,
+	.init		=	crypto_sha256_init,
+	.update		=	crypto_sha256_update,
+	.final		=	crypto_sha256_final,
+	.finup		=	crypto_sha256_finup,
+	.descsize	=	sizeof(struct sha256_state),
+	.base		=	{
+		.cra_name	=	"sha256",
+		.cra_driver_name=	"sha256-generic",
+		.cra_priority	=	100,
+		.cra_blocksize	=	SHA256_BLOCK_SIZE,
+		.cra_module	=	THIS_MODULE,
+	}
+}, {
+	.digestsize	=	SHA224_DIGEST_SIZE,
+	.init		=	crypto_sha224_init,
+	.update		=	crypto_sha256_update,
+	.final		=	crypto_sha256_final,
+	.finup		=	crypto_sha256_finup,
+	.descsize	=	sizeof(struct sha256_state),
+	.base		=	{
+		.cra_name	=	"sha224",
+		.cra_driver_name=	"sha224-generic",
+		.cra_priority	=	100,
+		.cra_blocksize	=	SHA224_BLOCK_SIZE,
+		.cra_module	=	THIS_MODULE,
+	}
+} };
+
+//硬件加速算法
+struct shash_alg infinity_shash_sha256_alg = {.digestsize = SHA256_DIGEST_SIZE,
+                                              .init       = infinity_sha256_init,
+                                              .update     = infinity_sha256_update,
+                                              .final      = infinity_sha256_final,
+                                              .export     = infinity_sha256_export,
+                                              .import     = infinity_sha256_import,
+                                              .descsize   = sizeof(struct sha256_state),
+                                              .statesize  = sizeof(struct sha256_state),
+                                              .base       = {
+                                                  .cra_name        = "sha256",
+                                                  .cra_driver_name = "sha256-infinity",
+                                                  .cra_priority    = 400,
+                                                  .cra_flags       = CRYPTO_ALG_TYPE_SHASH | CRYPTO_ALG_NEED_FALLBACK,
+                                                  .cra_blocksize   = SHA256_BLOCK_SIZE,
+                                                  .cra_module      = THIS_MODULE,
+                                                  .cra_ctxsize     = sizeof(struct infinity_sha256_ctx),
+                                              }};
+~~~
+
+### 源码
+
+* 内核加密算法源码：
+
+crypto\aes_generic.c
+
+crypto\sha256_generic.c
+
+* 硬件加密算法
+
+drivers\sstar\crypto\mdrv_aes.c
+
+drivers\sstar\crypto\mdrv_sha.c
+
+### 参考文献
+
+* [linux加解密框架（一）基础介绍 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/548277837)
+* [linux加解密框架（二）算法注册 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/548893037)
+* [linux加解密框架（三）算法模板 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/549125733)
+* [linux加解密框架（四）加解密流程 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/550038832)
+
+* [linux加解密框架（五）用户接口实现 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/550176751)

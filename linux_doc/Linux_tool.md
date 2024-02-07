@@ -4,6 +4,18 @@
 
 ## 基础
 
+### make
+
+* make -n 
+  在编译的时候加上了-n的参数
+  执行该命令编译并不真正的执行，只是顺序的列出该编译过程都执行哪些编译命令。
+* V=1
+  Linux 编译的时候也可以通过“V=1”来输出完整的命令，这个和uboot 一样
+
+* make -f ./scripts/Makefile.build obj=
+  在Kbuild系统中，Makefile.build文件算是最重要的文件之一了，它控制着整个内核的核心编译部分.
+  参考文章：https://zhuanlan.zhihu.com/p/362958145
+
 ### tail
 
 ~~~sh
@@ -24,6 +36,12 @@ watch -n 1 pwd
 - `-n 1`: 这个选项告诉 `watch` 每隔 1 秒刷新一次。
 - `pwd`: 这是您想要定期执行的命令。`pwd`（print working directory）是一个显示当前工作目录的命令。
 
+### awk
+
+awk '{print $3}'
+
+
+
 ### 打补丁
 
 * 单个文件
@@ -43,6 +61,8 @@ diff -uprN diff_dir/mbedtls-2.25.0/library/ mbedtls-2.25.0/library/ > library.pa
 ~~~
 patch -p1 < 补丁
 ~~~
+
+
 
 ### 火焰图
 
@@ -217,9 +237,7 @@ Connected to 06:0d:9e:bc:a9:87 (on wlan0)
 
 ~~~
 
-### ip
-
-* 查询设备
+### ip查看连接的设备
 
 ~~~sh
 # ip neigh show dev wlan1
@@ -227,7 +245,7 @@ Connected to 06:0d:9e:bc:a9:87 (on wlan0)
 # 
 ~~~
 
-### iwlist
+### iwlist扫描热点
 
 ~~~sh
 # iwlist wlan0 scanning | grep ESSID
@@ -236,7 +254,7 @@ Connected to 06:0d:9e:bc:a9:87 (on wlan0)
                     ESSID:"CMCC-i6cM"
 ~~~
 
-### hostapd
+### hostapd开热点
 
 查看热点信息，通过配置文件查看
 
@@ -259,4 +277,112 @@ tftp [服务器IP] -g -r [远程文件名] -l [本地文件名]
 - `-g` 表示GET操作，即下载文件。`-p` 表示PUT操作，即上传文件。
 - `-r [远程文件名]` 指定要从TFTP服务器下载的文件名。
 - `-l [本地文件名]` 是可选的，用于指定本地文件名。如果不指定，文件将被保存为远程文件名。
+
+
+
+    ### 启动 wlan0 网卡
+​    ifconfig wlan0 up
+
+    ### wpa_supplicant 连接无线网络
+​    wpa_supplicant -i wlan0 -c /etc/wpa_supplicant.conf &
+    ### udhcpc 自动获取 IP 地址
+​    udhcpc -i wlan0
+
+## 音频
+
+~~~shell
+# arecord -l
+**** List of CAPTURE Hardware Devices ****
+card 0: Device [USB PnP Sound Device], device 0: USB Audio [USB Audio]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+# 
+~~~
+
+现在`arecord -l`命令显示了一个可用的录音设备，这意味着你的系统已经成功识别了连接的USB声卡。从输出信息来看，这个声卡被识别为`card 0`，设备名称是`USB PnP Sound Device`，并且具有一个可用的录音子设备。
+
+### 开始录音
+
+既然声卡已被识别，你可以开始使用它进行录音了。使用`arecord`命令，你可以指定声卡和子设备号来录音。基于你提供的信息，这里是一个简单的录音命令示例：
+
+```bash
+arecord -D plughw:0,0 -f cd test.wav
+```
+
+这里的命令参数含义如下：
+
+- `-D plughw:0,0` 指定了使用的硬件设备。`plughw:0,0`表示使用第一个声卡（card 0）的第一个子设备（device 0）。这是`arecord`识别硬件设备的方式。
+- `-f cd` 指定录音的格式为CD质量，即44100 Hz采样率，16位采样深度，双声道。
+- `test.wav` 是录音保存的文件名。
+
+运行这个命令后，`arecord`将开始使用USB声卡进行录音，录音数据将保存在当前目录下的`test.wav`文件中。要停止录音，可以使用Ctrl+C终止命令。
+
+### 录音文件播放
+
+录音完成后，你可以使用`aplay`命令或任何其他音频播放器软件来播放录音文件：
+
+```bash
+aplay test.wav
+```
+
+## 代码仓库
+
+### tig
+
+### git
+
+* 打补丁
+
+  ~~~
+  git add kernel/scripts/mkimage
+  git commit -m "添加或修改 mkimage 脚本"
+  git format-patch -1 HEAD
+  ~~~
+
+* 重置到某个版本
+
+  ~~~
+  git log
+  查看版本
+  git reset 版本id
+  ~~~
+
+* 分支
+
+  * 查看本地分支
+
+  ~~~
+  git branch
+  查看分支名字
+  ~~~
+
+  * 切换本地分支
+
+  ~~~
+  git checkout 本地分支名字
+  ~~~
+
+  * 删除本地分支
+
+  ~~~
+  git branch -d 本地分支名字
+  ~~~
+
+  * 同步远端分支
+
+  ~~~
+  git checkout -b aaaaaaa origin/aaaaaaa
+  ~~~
+
+## 性能分析
+
+### htop
+
+* 查看进程的线程
+
+  打开 `htop` 后，按 `F3`然后选择Display options再按空格选择Show custom thread names，最后按 `F10`退出
+
+* 根据进程名字搜索
+
+  `htop` 是 `top` 的一个增强版，提供了更为友好的用户界面。在 `htop` 中，你可以直接输入线程名来搜索。打开 `htop` 后，按 `F3` 或 `/` 输入搜索词（线程名）。
 

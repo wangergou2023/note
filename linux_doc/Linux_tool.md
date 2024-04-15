@@ -4,6 +4,22 @@
 
 ## 基础
 
+### cp
+
+~~~sh
+cp -
+~~~
+
+
+
+### ls
+
+~~~shell
+ls -l --block-size=K
+ls -la
+ls -lh
+~~~
+
 ### make
 
 * make -n 
@@ -210,6 +226,19 @@ Auto-detecting system features:
   wangyongchao@localhost:~/workspace/perf/FlameGraph-1.0$ 
   ~~~
 
+## 压缩
+
+7z
+
+* 解压
+  * 7z x 文件
+
+tar
+
+* 解压
+  * tar -xzvf 文件.tar.gz
+* 压缩
+  * tar -czvf 文件.tar.gz 文件夹
 
 ## 网络
 
@@ -285,7 +314,7 @@ tftp [服务器IP] -g -r [远程文件名] -l [本地文件名]
 
     ### wpa_supplicant 连接无线网络
 ​    wpa_supplicant -i wlan0 -c /etc/wpa_supplicant.conf &
-    ### udhcpc 自动获取 IP 地址
+​    ### udhcpc 自动获取 IP 地址
 ​    udhcpc -i wlan0
 
 ## 音频
@@ -328,6 +357,108 @@ aplay test.wav
 ## 代码仓库
 
 ### tig
+
+### Vimdiff
+
+如果你倾向于使用命令行而不是图形界面，并且希望实现左右对比的效果，`vimdiff` 是一个非常好的选择。`vimdiff` 可以在命令行中提供一个强大的视觉对比体验，它会将差异以左右分栏的方式展示，这正是你所要求的。
+
+### 配置 Git 使用 Vimdiff
+
+首先，确保你已经安装了 Vim。然后，配置 Git 以使用 `vimdiff` 作为差异工具：
+
+```bash
+git config --global diff.tool vimdiff
+git config --global difftool.prompt false
+```
+
+这样配置后，`git difftool` 命令将使用 `vimdiff` 来显示差异。
+
+### 使用 Vimdiff 查看差异
+
+当你想要查看两个提交之间的差异时，可以使用以下命令：
+
+```bash
+git difftool <commit1> <commit2>
+```
+
+如果你想要查看工作目录中当前更改与最近一次提交之间的差异，可以不加提交 ID：
+
+```bash
+git difftool
+```
+
+### difftool 操作基础
+
+在 `vimdiff` 中，你可以使用 Vim 的标准导航键来移动光标。此外，这里有一些基础的 `vimdiff` 操作命令：
+
+- `:qa`：退出所有对比窗口。
+- `:qa!`：强制退出所有对比窗口，忽略任何更改。
+- `:wqa`：保存所有更改并退出。
+- `]c`：跳转到下一个差异。
+- `[c`：跳转到上一个差异。
+- `zo`：来展开被折叠的相同文本行
+- `zc`：来折叠的相同文本行
+- `do`：将当前差异从另一侧复制到当前侧（"diff obtain"）。
+- `dp`：将当前差异从当前侧复制到另一侧（"diff put"）。
+- `Ctrl-ww`：光标在两个窗口间彼此切换
+
+使用 `vimdiff` 查看差异时，文件会被加载到 Vim 的不同窗口中，差异以高亮显示。这种方式提供了一个非常直观和强大的方式来查看和编辑文件的差异。
+
+请注意，虽然 `vimdiff` 提供了一个强大的视觉对比工具，但它也需要一定的 Vim 使用经验。如果你不熟悉 Vim，可能需要先花时间学习 Vim 的基本操作。
+
+diff
+
+要查看文件是被修改还是新增（或删除），你可以使用 `git diff` 命令配合 `--name-status` 参数，这样不仅会列出文件名，还会在文件名前显示文件状态（如修改（M）、新增（A）、删除（D）等）。
+
+```bash
+git difftool --name-status 31d83862ce8b6e42bb4adedcb1880ae9d2be8dc2 5daf40ea89075f4e6a11112e5370ab66ff14b94f
+```
+
+使用这个命令，你将能够看到每个文件被修改的类型：
+
+- **A**: 文件被添加（新增）
+- **M**: 文件被修改
+- **D**: 文件被删除
+
+这样，你就可以直观地看到在两个提交之间，哪些文件是新增的，哪些是修改过的，哪些是被删除的。
+
+~~~shell
+wang@localhost:~//uboot$ git difftool 31d83862ce8b6e42bb4adedcb1880ae9d2be8dc2 5daf40ea89075f4e6a11112e5370ab66ff14b94f --name-status 
+M       common/Makefile
+A       common/Makefile.orig
+M       common/autoboot.c
+A       common/autoboot.c.orig
+A       common/soft_crc32.c
+A       common/soft_crc32.h
+A       common/xiaomi_dfu.c
+M       include/configs/infinity3.h
+A       include/configs/infinity3.h.orig
+
+~~~
+
+要查看其中一个文件的具体修改内容，例如 `common/Makefile`，你可以使用 `git diff` 命令并指定文件路径：
+
+```bash
+git difftool 31d83862ce8b6e42bb4adedcb1880ae9d2be8dc2 5daf40ea89075f4e6a11112e5370ab66ff14b94f -- common/Makefile
+```
+
+这个命令会显示出 `31d83862ce8b6e42bb4adedcb1880ae9d2be8dc2` 和 `5daf40ea89075f4e6a11112e5370ab66ff14b94f` 这两个提交之间 `common/Makefile` 文件的具体差异。差异内容会以一种易于理解的方式展示出来，其中添加的行通常以绿色显示，删除的行则以红色显示（这取决于你的终端或 Git 客户端设置）。
+
+~~~shell
+git difftool 31d83862ce8b6e42bb4adedcb1880ae9d2be8dc2~1 -- common/Makefile
+~~~
+
+这个命令会显示出 `31d83862ce8b6e42bb4adedcb1880ae9d2be8dc2` 和 上一个提交之间 `common/Makefile` 文件的具体差异
+
+如果你觉得每次输入两个对比 ID 很麻烦，有几种方法可以简化这个过程：
+
+Git 支持使用 `HEAD` 来表示当前分支的最新提交。如果你想比较最新提交和之前的某个提交，可以使用相对引用，比如 `HEAD~1` 表示当前提交的前一个提交。例如：
+
+```bash
+git difftool HEAD~1 -- common/Makefile
+```
+
+这会比较当前最新提交和它的前一个提交之间的 `common/Makefile` 文件差异。
 
 ### git
 
@@ -385,4 +516,133 @@ aplay test.wav
 * 根据进程名字搜索
 
   `htop` 是 `top` 的一个增强版，提供了更为友好的用户界面。在 `htop` 中，你可以直接输入线程名来搜索。打开 `htop` 后，按 `F3` 或 `/` 输入搜索词（线程名）。
+
+
+
+## 走近科学
+
+### shadowsocks
+
+#### 服务端vps配置
+
+~~~
+sudo apt install shadowsocks-libev
+~~~
+
+vi /etc/shadowsocks-libev/config.json 
+
+~~~
+{
+    "server":["::", "0.0.0.0"],
+    "mode":"tcp_and_udp",
+    "server_port":8388,
+    "local_port":1080,
+    "password":"your_password",
+    "timeout":60,
+    "method":"chacha20-ietf-poly1305"
+}
+~~~
+
+~~~
+systemctl restart shadowsocks-libev
+~~~
+
+#### 客户端下载
+
+https://github.com/shadowsocks/shadowsocks-windows/releases
+
+#### shadowsocks配置
+
+~~~yaml
+1、服务器地址: IP或者域名
+2、服务器端口: 默认8388
+3、加密方式: chacha20-ietf-poly1305
+4、密码: 根据服务器配置文件里面的密码修改
+~~~
+
+配置好后可以生成二维码或者链接分享给朋友
+
+#### clash配置
+
+使用[Subscription Converter (yqhss.xyz)](http://sub.yqhss.xyz/)这个网站将shadowsocks分享的链接转化成clash
+
+#### Shadowsocks-manager
+
+使用docker最简单
+
+### ShadowsocksR
+
+#### 服务端vps配置
+
+~~~sh
+wget --no-check-certificate https://raw.githubusercontent.com/ShadowsocksR-Live/shadowsocksr-native/master/install/ssrn-install.sh
+bash ssrn-install.sh
+sudo systemctl restart ssr-native
+~~~
+
+参考他人配置
+
+~~~sh
+服务器地址：jm1.nodelist.top
+服务器端口：20448
+加密方式：aes-256-cfb
+密码：yMd3UZ
+协议：auth_aes128_sha1
+协议参数：43259:fLqV25
+混淆：tls1.2_ticket_auth
+混淆参数：e10f443259.microsoft.com
+~~~
+
+~~~json
+root@llx:~/temp# cat /etc/ssr-native/config.json 
+{
+    "password": "yMd3UZ",
+    "method": "aes-256-cfb",
+    "protocol": "auth_aes128_sha1",
+    "protocol_param": "43259:fLqV25",
+    "obfs": "tls1.2_ticket_auth",
+    "obfs_param": "e10f443259.microsoft.com",
+
+    "udp": false,
+    "idle_timeout": 300,
+    "connect_timeout": 6,
+    "udp_timeout": 6,
+
+    "server_settings": {
+        "listen_address": "0.0.0.0",
+        "listen_port": 20448
+    },
+
+    "client_settings": {
+        "server": "120.119.110.520",
+        "server_port": 20448,
+        "listen_address": "0.0.0.0",
+        "listen_port": 1080
+    },
+
+    "over_tls_settings": {
+        "enable": false,
+        "server_domain": "",
+        "path": "//",
+        "root_cert_file": ""
+    }
+}
+
+~~~
+
+### ssl证书
+
+~~~sh
+# Ubuntu 安装 certbot：
+sudo apt install snapd
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+# 生成证书 & 修改 Nginx 配置
+sudo certbot --nginx
+# 根据指示进行操作
+# 重启 Nginx
+sudo service nginx restart
+~~~
+
+
 

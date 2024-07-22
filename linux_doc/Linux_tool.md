@@ -7,7 +7,14 @@
 ### cp
 
 ~~~sh
-cp -
+cp -rd
+~~~
+
+### grep
+
+~~~
+grep -nr "test"
+grep -nr --include="*.h" "test"
 ~~~
 
 
@@ -502,8 +509,38 @@ git difftool HEAD~1 -- common/Makefile
   * 同步远端分支
 
   ~~~
-  git checkout -b aaaaaaa origin/aaaaaaa
+  git checkout -b aaaaaaa bbbbb/aaaaaaa
   ~~~
+
+* cherry-pick
+
+  如果你只想把最新的单笔提交合并到 `imi` 分支而不希望合并整个分支的更改，你可以使用 `git cherry-pick` 命令。这个命令允许你选择性地合并一个或几个特定的提交到你当前的分支。下面是如何操作的：
+
+  ### 1. 确定要合并的提交哈希
+  首先，你需要找到你想要合并的那个提交的哈希值。在你的原始分支上，你可以使用 `git log` 来查看提交历史并获取相应的提交哈希：
+  ```bash
+  git log
+  ```
+  从输出中复制你想要合并的提交的哈希值。
+
+  ### 2. 切换到 `imi` 分支
+  然后，切换到你的目标分支，即 `imi` 分支：
+  ```bash
+  git checkout imi
+  ```
+
+  ### 3. 使用 `cherry-pick` 合并特定的提交
+  使用 `git cherry-pick` 命令来合并那个特定的提交：
+  ```bash
+  git cherry-pick <commit-hash>
+  ```
+  将 `<commit-hash>` 替换为你在步骤 1 中找到的提交哈希值。
+
+  ### 注意事项
+  - **冲突处理**：`cherry-pick` 操作可能会引起冲突，特别是当选定的提交与目标分支上的现有更改不兼容时。如果发生冲突，Git 将暂停操作，并要求你解决这些冲突。解决完冲突后，你需要使用 `git cherry-pick --continue` 来完成 `cherry-pick` 操作，或者使用 `git cherry-pick --abort` 来取消操作。
+  - **提交历史**：使用 `cherry-pick` 会在目标分支创建一个新的提交，该提交是原提交的一个副本。这意味着它会有一个新的哈希值，但提交内容保持不变。
+
+  通过以上步骤，你可以将指定的单笔提交应用到 `imi` 分支上，而不影响其他提交。这样做的好处是能精确控制合并到分支上的更改。
 
 ## 性能分析
 

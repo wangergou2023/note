@@ -86,5 +86,5 @@ start.s
 | 📁 是否需要 dtb     | 可选（ATAG 或 FDT）                     | ✅ 必须                                     | ✅ 必须                                     |
 | 🧰 是否支持 ramdisk | ✅ 支持                               | ✅ 支持                                     | ✅ 支持                                     |
 | 📆 是否推荐         | ❌（老旧，逐渐淘汰）                         | ✅（ARM32 推荐方式）                            | ✅✅（ARM64 必须）                             |
-| 🛠️ 示例          | `bootm 0x80008000 - 0x82000000`    | `bootz 0x80008000 0x83000000 0x82000000` | `booti 0x80008000 0x83000000 0x82000000` |
-| 🕶️命令行参数格式 | bootm/bootz/booti <kernel_addr> <ramdisk_addr> <fdt_addr> |
+| 🛠️ 示例          | `bootm 0x80008000 - 0x82000000`    | `bootz 0x80008000 - 0x82000000` | `booti 0x80008000 - 0x82000000` |
+| 🕶️命令行参数格式 | bootm/bootz/booti <kernel_addr> - <fdt_addr> |
